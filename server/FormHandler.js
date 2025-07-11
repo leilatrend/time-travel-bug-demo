@@ -1,5 +1,5 @@
 function handleSave(data) {
-  // Add null check to prevent null pointer exception on line 102
+  // Add null check to prevent null pointer exception
   if (data && data.field != null && data.field !== undefined) {
     console.log(data.field.length);
   } else {
