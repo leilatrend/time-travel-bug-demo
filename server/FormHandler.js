@@ -6,6 +6,7 @@ function handleSave(data) {
     console.log("Field is null, undefined, or has no length property");
     // Handle the case where field is null/undefined
     // Could return an error, set default value, or handle gracefully
+    return { error: "Invalid field data provided" };
   }
 }
 
