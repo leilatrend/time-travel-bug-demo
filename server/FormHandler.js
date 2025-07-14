@@ -1,7 +1,10 @@
 function handleSave(data) {
-  // Modern ES2020+ approach with optional chaining and nullish coalescing
-  const fieldLength = data?.field?.length ?? 0;
-  console.log(fieldLength);
+  // Add null safety checks
+  if (data && data.field && typeof data.field.length !== 'undefined') {
+    console.log(data.field.length);
+  } else {
+    console.log('Invalid data: field is null or undefined');
+  }
 }
 
 module.exports = { handleSave };
