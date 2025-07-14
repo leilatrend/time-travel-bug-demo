@@ -1,10 +1,7 @@
 function handleSave(data) {
-  // Add null checks to prevent crashes
-  if (data && data.field && typeof data.field.length !== 'undefined') {
-    console.log(data.field.length);
-  } else {
-    console.log('Invalid data or field not provided');
-  }
+  // Modern ES2020+ approach with optional chaining and nullish coalescing
+  const fieldLength = data?.field?.length ?? 0;
+  console.log(fieldLength);
 }
 
 module.exports = { handleSave };
