@@ -1,5 +1,9 @@
 function handleSave(data) {
-  console.log(data && data.field ? data.field.length : 0); // Fixed null pointer exception
+  if (data && data.field && data.field.length !== undefined) {
+    console.log(data.field.length);
+  } else {
+    console.log('Field data is null or undefined');
+  }
 }
 
 module.exports = { handleSave };
