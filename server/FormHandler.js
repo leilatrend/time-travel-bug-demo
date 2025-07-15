@@ -1,9 +1,8 @@
 function handleSave(data) {
-  // Add null/undefined checks to prevent null pointer exception
-  if (data && data.field && typeof data.field.length !== 'undefined') {
+  if (data && data.field != null) {
     console.log(data.field.length);
   } else {
-    console.log('Invalid data: field is null, undefined, or missing length property');
+    console.log('field is missing');
   }
 }
 
