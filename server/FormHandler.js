@@ -1,9 +1,16 @@
 function handleSave(data) {
-  if (data && data.field && data.field.length !== undefined) {
-    console.log(data.field.length);
-  } else {
-    console.log('Field data is null or undefined');
+  // Add null safety checks to prevent crashes
+  if (!data) {
+    console.log('Error: No data provided');
+    return;
   }
+  
+  if (!data.field) {
+    console.log('Error: No field data provided');
+    return;
+  }
+  
+  console.log(data.field.length); // Now safe from null pointer exceptions
 }
 
 module.exports = { handleSave };
