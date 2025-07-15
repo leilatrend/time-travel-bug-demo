@@ -1,1 +1,9 @@
-function handleSave(data) {\n  if (data.field && Array.isArray(data.field)) {\n    console.log(data.field.length);\n  } else if (typeof data.field === 'string') {\n    console.log(data.field.length);\n  } else {\n    console.log('field is missing or invalid');\n  }\n}\n\nmodule.exports = { handleSave };
+function handleSave(data) {
+  if (!data || !data.field) {
+    console.error("Missing field data");
+    return;
+  }
+  console.log(data.field.length);
+}
+
+module.exports = { handleSave };
