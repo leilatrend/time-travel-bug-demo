@@ -1,10 +1,11 @@
 function handleSave(data) {
-  // Add null/undefined checks to prevent crashes
-  if (data && data.field && typeof data.field.length !== 'undefined') {
-    console.log(data.field.length);
-  } else {
-    console.log('Invalid data: field is null or undefined');
+  // Add null checks to prevent crashes
+  if (!data || !data.field) {
+    console.log('Invalid data provided');
+    return;
   }
+  
+  console.log(data.field.length);
 }
 
 module.exports = { handleSave };
