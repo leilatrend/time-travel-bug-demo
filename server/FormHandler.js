@@ -1,8 +1,9 @@
 function handleSave(data) {
-  if (data && data.field) {
+  // Add null safety checks to prevent crashes
+  if (data && data.field && data.field.length !== undefined) {
     console.log(data.field.length);
   } else {
-    console.log("field is missing or null");
+    console.log('Field data is invalid or missing');
   }
 }
 
