@@ -1,6 +1,7 @@
 function handleSave(data) {
+  // Add null checks to prevent crashes
   if (!data || !data.field) {
-    console.error("Missing field data");
+    console.log('Invalid data provided');
     return;
   }
   console.log(data.field.length);
