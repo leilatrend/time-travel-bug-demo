@@ -1,4 +1,16 @@
 {
-    "name": "time-travel-bug-demo",
-    "version": "1.0.0"
+  "name": "time-travel-bug-demo",
+  "version": "1.0.0",
+  "description": "Demo repository to test bug fixes",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
 }
