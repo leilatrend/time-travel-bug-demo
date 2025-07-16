@@ -1,10 +1,10 @@
 function handleSave(data) {
-  // Add null checks to prevent crashes
-  if (data && data.field && typeof data.field.length !== 'undefined') {
+  if (data && data.field && Array.isArray(data.field)) {
     console.log(data.field.length);
   } else {
-    console.log('No valid data or field provided');
+    console.log("field is missing or not an array.");
   }
 }
 
 module.exports = { handleSave };
+
