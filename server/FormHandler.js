@@ -1,5 +1,9 @@
 function handleSave(data) {
-  console.log(data.field.length); // 🐛 potential null pointer
+  if (!data || !data.field) {
+    console.error("Invalid form data:", data);
+    return;
+  }
+  console.log(data.field.length);
 }
 
 module.exports = { handleSave };
