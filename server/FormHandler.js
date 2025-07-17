@@ -1,5 +1,9 @@
 function handleSave(data) {
-  console.log(data.field.length); // 🐛 potential null pointer
+  if (data && data.field) {
+    console.log(data.field.length);
+  } else {
+    console.error("Field data is missing or null", data);
+  }
 }
 
 module.exports = { handleSave };
