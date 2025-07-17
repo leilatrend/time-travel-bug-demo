@@ -1,5 +1,1 @@
-function handleSave(data) {
-  console.log(data.field.length); // 🐛 potential null pointer
-}
-
-module.exports = { handleSave };
+function handleSave(data) {\n  // Safely check and log the field's length\n  if (data && data.field && Array.isArray(data.field)) {\n    console.log(data.field.length);\n  } else {\n    console.error('Invalid data received in handleSave:', data);\n    // Optionally handle case here\n  }\n}\n\nmodule.exports = { handleSave };\n
