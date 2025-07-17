@@ -1,5 +1,1 @@
-function handleSave(data) {
-  console.log(data.field.length); // 🐛 potential null pointer
-}
-
-module.exports = { handleSave };
+function handleSave(data) {\n  if (data && Array.isArray(data.field)) {\n    console.log(data.field.length);\n  } else if (data && typeof data.field === 'string') {\n    console.log(data.field.length);\n  } else {\n    console.log('No field data');\n  }\n}\n\nmodule.exports = { handleSave };
