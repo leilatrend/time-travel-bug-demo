@@ -1,5 +1,5 @@
 function handleSave(data) {
-  console.log(data.field.length); // 🐛 potential null pointer
+  const fieldLen = (data && data.field) ? data.field.length : 0;
+  console.log(fieldLen); // 🐋 safe now!
 }
-
 module.exports = { handleSave };
