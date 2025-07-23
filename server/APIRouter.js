@@ -514,6 +514,15 @@ class APIRouter {
 
             // 🐛 HIDDEN BUG: This will cause issues when req.body.fileData is missing
             // The error will be confusing and won't clearly indicate the missing field
+        // FIXED: Validate fileData exists before creating Buffer
+        if (!req.body || !req.body.fileData) {
+            return {
+                status: 400,
+                error: 'Missing required field: fileData',
+                message: 'File data is required for upload'
+            };
+        }
+
             const fileData = Buffer.from(req.body.fileData, 'base64');
 
             const metadata = {
