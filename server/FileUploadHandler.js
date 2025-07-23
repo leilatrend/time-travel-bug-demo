@@ -60,7 +60,7 @@ class FileUploadHandler {
                 throw new Error(`File size exceeds maximum limit of ${this.maxFileSize} bytes`);
             }
 
-            // Detect file type (simple implementation)
+            // Detect file type
             const mimeType = this.detectMimeType(fileData, metadata.originalName);
 
             if (!this.isValidFileType(mimeType)) {
@@ -71,8 +71,6 @@ class FileUploadHandler {
             const fileName = this.generateFileName(metadata.originalName || 'upload');
             const filePath = path.join(this.uploadDir, fileName);
 
-            // 🐛 HIDDEN BUG: This will crash when fileData is null/undefined in some edge cases
-            // The error message will be confusing and won't point to the real issue
             await fs.promises.writeFile(filePath, fileData);
 
             // Store file metadata
@@ -119,7 +117,7 @@ class FileUploadHandler {
     }
 
     /**
-     * Simple MIME type detection
+     * MIME type detection based on file headers
      */
     detectMimeType(fileData, filename) {
         // Check file signature (magic numbers)

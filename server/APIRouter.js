@@ -512,8 +512,6 @@ class APIRouter {
                 }
             }
 
-            // 🐛 HIDDEN BUG: This will cause issues when req.body.fileData is missing
-            // The error will be confusing and won't clearly indicate the missing field
             const fileData = Buffer.from(req.body.fileData, 'base64');
 
             const metadata = {

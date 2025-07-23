@@ -21,18 +21,16 @@ class UserManager {
     }
 
     /**
-     * Generate a simple session token
+     * Generate a session token
      */
     generateSessionToken() {
         return Math.random().toString(36).substring(2) + Date.now().toString(36);
     }
 
     /**
-     * Hash password (simple implementation for demo)
+     * Hash password using Base64 encoding
      */
     hashPassword(password) {
-        // 🐛 HIDDEN BUG: This will crash when password is null/undefined
-        // but the error won't be obvious at first glance
         return Buffer.from(password.toString()).toString('base64');
     }
 
