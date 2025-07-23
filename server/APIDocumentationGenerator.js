@@ -6,175 +6,175 @@
 const ConfigManager = require('./ConfigManager');
 
 class APIDocumentationGenerator {
-  constructor() {
-    this.endpoints = new Map();
-    this.setupEndpoints();
-  }
+    constructor() {
+        this.endpoints = new Map();
+        this.setupEndpoints();
+    }
 
-  /**
-   * Setup all API endpoint documentation
-   */
-  setupEndpoints() {
-    // Form endpoints
-    this.addEndpoint('POST', '/api/forms', {
-      summary: 'Create a new form',
-      description: 'Creates a new form with validation and stores it in the database',
-      requestBody: {
-        type: 'object',
-        required: ['name', 'email'],
-        properties: {
-          name: { type: 'string', minLength: 2, maxLength: 50 },
-          email: { type: 'string', format: 'email' },
-          field: { type: 'string', maxLength: 100 },
-          message: { type: 'string', maxLength: 500 }
-        }
-      },
-      responses: {
-        201: { description: 'Form created successfully' },
-        400: { description: 'Validation error' },
-        500: { description: 'Internal server error' }
-      }
-    });
+    /**
+     * Setup all API endpoint documentation
+     */
+    setupEndpoints() {
+        // Form endpoints
+        this.addEndpoint('POST', '/api/forms', {
+            summary: 'Create a new form',
+            description: 'Creates a new form with validation and stores it in the database',
+            requestBody: {
+                type: 'object',
+                required: ['name', 'email'],
+                properties: {
+                    name: { type: 'string', minLength: 2, maxLength: 50 },
+                    email: { type: 'string', format: 'email' },
+                    field: { type: 'string', maxLength: 100 },
+                    message: { type: 'string', maxLength: 500 }
+                }
+            },
+            responses: {
+                201: { description: 'Form created successfully' },
+                400: { description: 'Validation error' },
+                500: { description: 'Internal server error' }
+            }
+        });
 
-    this.addEndpoint('GET', '/api/forms/{id}', {
-      summary: 'Get form by ID',
-      description: 'Retrieves a specific form by its ID',
-      parameters: [
-        { name: 'id', in: 'path', required: true, type: 'integer' }
-      ],
-      responses: {
-        200: { description: 'Form retrieved successfully' },
-        404: { description: 'Form not found' },
-        500: { description: 'Internal server error' }
-      }
-    });
+        this.addEndpoint('GET', '/api/forms/{id}', {
+            summary: 'Get form by ID',
+            description: 'Retrieves a specific form by its ID',
+            parameters: [
+                { name: 'id', in: 'path', required: true, type: 'integer' }
+            ],
+            responses: {
+                200: { description: 'Form retrieved successfully' },
+                404: { description: 'Form not found' },
+                500: { description: 'Internal server error' }
+            }
+        });
 
-    this.addEndpoint('PUT', '/api/forms/{id}', {
-      summary: 'Update form',
-      description: 'Updates an existing form',
-      parameters: [
-        { name: 'id', in: 'path', required: true, type: 'integer' }
-      ],
-      requestBody: {
-        type: 'object',
-        properties: {
-          name: { type: 'string', minLength: 2, maxLength: 50 },
-          email: { type: 'string', format: 'email' },
-          field: { type: 'string', maxLength: 100 },
-          message: { type: 'string', maxLength: 500 }
-        }
-      },
-      responses: {
-        200: { description: 'Form updated successfully' },
-        400: { description: 'Validation error' },
-        404: { description: 'Form not found' },
-        500: { description: 'Internal server error' }
-      }
-    });
+        this.addEndpoint('PUT', '/api/forms/{id}', {
+            summary: 'Update form',
+            description: 'Updates an existing form',
+            parameters: [
+                { name: 'id', in: 'path', required: true, type: 'integer' }
+            ],
+            requestBody: {
+                type: 'object',
+                properties: {
+                    name: { type: 'string', minLength: 2, maxLength: 50 },
+                    email: { type: 'string', format: 'email' },
+                    field: { type: 'string', maxLength: 100 },
+                    message: { type: 'string', maxLength: 500 }
+                }
+            },
+            responses: {
+                200: { description: 'Form updated successfully' },
+                400: { description: 'Validation error' },
+                404: { description: 'Form not found' },
+                500: { description: 'Internal server error' }
+            }
+        });
 
-    // User endpoints
-    this.addEndpoint('POST', '/api/users/register', {
-      summary: 'Register new user',
-      description: 'Creates a new user account with email validation',
-      requestBody: {
-        type: 'object',
-        required: ['email', 'password'],
-        properties: {
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string', minLength: 6 },
-          name: { type: 'string', maxLength: 50 },
-          role: { type: 'string', enum: ['user', 'admin'] }
-        }
-      },
-      responses: {
-        201: { description: 'User registered successfully' },
-        400: { description: 'Validation error or user already exists' },
-        500: { description: 'Internal server error' }
-      }
-    });
+        // User endpoints
+        this.addEndpoint('POST', '/api/users/register', {
+            summary: 'Register new user',
+            description: 'Creates a new user account with email validation',
+            requestBody: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                    email: { type: 'string', format: 'email' },
+                    password: { type: 'string', minLength: 6 },
+                    name: { type: 'string', maxLength: 50 },
+                    role: { type: 'string', enum: ['user', 'admin'] }
+                }
+            },
+            responses: {
+                201: { description: 'User registered successfully' },
+                400: { description: 'Validation error or user already exists' },
+                500: { description: 'Internal server error' }
+            }
+        });
 
-    this.addEndpoint('POST', '/api/users/login', {
-      summary: 'User login',
-      description: 'Authenticates user and returns session token',
-      requestBody: {
-        type: 'object',
-        required: ['email', 'password'],
-        properties: {
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string' }
-        }
-      },
-      responses: {
-        200: { description: 'Login successful, returns user and token' },
-        401: { description: 'Invalid credentials' },
-        500: { description: 'Internal server error' }
-      }
-    });
+        this.addEndpoint('POST', '/api/users/login', {
+            summary: 'User login',
+            description: 'Authenticates user and returns session token',
+            requestBody: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                    email: { type: 'string', format: 'email' },
+                    password: { type: 'string' }
+                }
+            },
+            responses: {
+                200: { description: 'Login successful, returns user and token' },
+                401: { description: 'Invalid credentials' },
+                500: { description: 'Internal server error' }
+            }
+        });
 
-    // File endpoints
-    this.addEndpoint('POST', '/api/files/upload', {
-      summary: 'Upload file',
-      description: 'Uploads a file with validation and metadata',
-      headers: {
-        'Authorization': { type: 'string', description: 'Bearer token (optional)' }
-      },
-      requestBody: {
-        type: 'object',
-        required: ['fileData', 'fileName'],
-        properties: {
-          fileData: { type: 'string', format: 'base64' },
-          fileName: { type: 'string' },
-          description: { type: 'string' },
-          tags: { type: 'array', items: { type: 'string' } },
-          isPublic: { type: 'boolean' }
-        }
-      },
-      responses: {
-        201: { description: 'File uploaded successfully' },
-        400: { description: 'Validation error or file too large' },
-        500: { description: 'Internal server error' }
-      }
-    });
+        // File endpoints
+        this.addEndpoint('POST', '/api/files/upload', {
+            summary: 'Upload file',
+            description: 'Uploads a file with validation and metadata',
+            headers: {
+                'Authorization': { type: 'string', description: 'Bearer token (optional)' }
+            },
+            requestBody: {
+                type: 'object',
+                required: ['fileData', 'fileName'],
+                properties: {
+                    fileData: { type: 'string', format: 'base64' },
+                    fileName: { type: 'string' },
+                    description: { type: 'string' },
+                    tags: { type: 'array', items: { type: 'string' } },
+                    isPublic: { type: 'boolean' }
+                }
+            },
+            responses: {
+                201: { description: 'File uploaded successfully' },
+                400: { description: 'Validation error or file too large' },
+                500: { description: 'Internal server error' }
+            }
+        });
 
-    // System endpoints
-    this.addEndpoint('GET', '/api/health', {
-      summary: 'Health check',
-      description: 'Returns system health status',
-      responses: {
-        200: { description: 'System is healthy' }
-      }
-    });
+        // System endpoints
+        this.addEndpoint('GET', '/api/health', {
+            summary: 'Health check',
+            description: 'Returns system health status',
+            responses: {
+                200: { description: 'System is healthy' }
+            }
+        });
 
-    this.addEndpoint('GET', '/api/stats', {
-      summary: 'System statistics',
-      description: 'Returns comprehensive system statistics',
-      responses: {
-        200: { description: 'Statistics retrieved successfully' },
-        500: { description: 'Internal server error' }
-      }
-    });
-  }
+        this.addEndpoint('GET', '/api/stats', {
+            summary: 'System statistics',
+            description: 'Returns comprehensive system statistics',
+            responses: {
+                200: { description: 'Statistics retrieved successfully' },
+                500: { description: 'Internal server error' }
+            }
+        });
+    }
 
-  /**
-   * Add endpoint documentation
-   */
-  addEndpoint(method, path, documentation) {
-    const key = `${method.toUpperCase()}:${path}`;
-    this.endpoints.set(key, {
-      method: method.toUpperCase(),
-      path,
-      ...documentation
-    });
-  }
+    /**
+     * Add endpoint documentation
+     */
+    addEndpoint(method, path, documentation) {
+        const key = `${method.toUpperCase()}:${path}`;
+        this.endpoints.set(key, {
+            method: method.toUpperCase(),
+            path,
+            ...documentation
+        });
+    }
 
-  /**
-   * Generate HTML documentation
-   */
-  generateHTMLDocumentation() {
-    const config = ConfigManager.getSection('app');
-    const endpoints = Array.from(this.endpoints.values());
+    /**
+     * Generate HTML documentation
+     */
+    generateHTMLDocumentation() {
+        const config = ConfigManager.getSection('app');
+        const endpoints = Array.from(this.endpoints.values());
 
-    return `
+        return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -323,12 +323,12 @@ class APIDocumentationGenerator {
     <div class="toc">
         <h3>📚 Table of Contents</h3>
         <ul>
-            ${endpoints.map(endpoint => 
-                `<li><a href="#${this.generateAnchor(endpoint.method, endpoint.path)}">
+            ${endpoints.map(endpoint =>
+            `<li><a href="#${this.generateAnchor(endpoint.method, endpoint.path)}">
                     <span class="method ${endpoint.method.toLowerCase()}">${endpoint.method}</span>
                     ${endpoint.path} - ${endpoint.summary}
                 </a></li>`
-            ).join('')}
+        ).join('')}
         </ul>
     </div>
 
@@ -352,15 +352,15 @@ class APIDocumentationGenerator {
     </script>
 </body>
 </html>`;
-  }
+    }
 
-  /**
-   * Generate HTML for a single endpoint
-   */
-  generateEndpointHTML(endpoint) {
-    const anchor = this.generateAnchor(endpoint.method, endpoint.path);
-    
-    return `
+    /**
+     * Generate HTML for a single endpoint
+     */
+    generateEndpointHTML(endpoint) {
+        const anchor = this.generateAnchor(endpoint.method, endpoint.path);
+
+        return `
     <div class="endpoint" id="${anchor}">
         <div class="endpoint-header">
             <div>
@@ -377,13 +377,13 @@ class APIDocumentationGenerator {
             ${endpoint.responses ? this.generateResponsesHTML(endpoint.responses) : ''}
         </div>
     </div>`;
-  }
+    }
 
-  /**
-   * Generate parameters section
-   */
-  generateParametersHTML(parameters) {
-    return `
+    /**
+     * Generate parameters section
+     */
+    generateParametersHTML(parameters) {
+        return `
     <div class="section">
         <div class="section-title">📝 Parameters</div>
         ${parameters.map(param => `
@@ -397,13 +397,13 @@ class APIDocumentationGenerator {
             </div>
         `).join('')}
     </div>`;
-  }
+    }
 
-  /**
-   * Generate headers section
-   */
-  generateHeadersHTML(headers) {
-    return `
+    /**
+     * Generate headers section
+     */
+    generateHeadersHTML(headers) {
+        return `
     <div class="section">
         <div class="section-title">📋 Headers</div>
         ${Object.entries(headers).map(([name, info]) => `
@@ -416,13 +416,13 @@ class APIDocumentationGenerator {
             </div>
         `).join('')}
     </div>`;
-  }
+    }
 
-  /**
-   * Generate request body section
-   */
-  generateRequestBodyHTML(requestBody) {
-    return `
+    /**
+     * Generate request body section
+     */
+    generateRequestBodyHTML(requestBody) {
+        return `
     <div class="section">
         <div class="section-title">📤 Request Body</div>
         <div class="code">${JSON.stringify(this.generateSchemaExample(requestBody), null, 2)}</div>
@@ -431,13 +431,13 @@ class APIDocumentationGenerator {
             ${this.generateSchemaHTML(requestBody)}
         </div>
     </div>`;
-  }
+    }
 
-  /**
-   * Generate responses section
-   */
-  generateResponsesHTML(responses) {
-    return `
+    /**
+     * Generate responses section
+     */
+    generateResponsesHTML(responses) {
+        return `
     <div class="section">
         <div class="section-title">📥 Responses</div>
         ${Object.entries(responses).map(([code, info]) => `
@@ -447,14 +447,14 @@ class APIDocumentationGenerator {
             </div>
         `).join('')}
     </div>`;
-  }
+    }
 
-  /**
-   * Generate schema HTML
-   */
-  generateSchemaHTML(schema) {
-    if (schema.type === 'object') {
-      return `
+    /**
+     * Generate schema HTML
+     */
+    generateSchemaHTML(schema) {
+        if (schema.type === 'object') {
+            return `
         <div style="margin-left: 20px;">
             ${Object.entries(schema.properties || {}).map(([name, prop]) => `
                 <div class="property">
@@ -468,136 +468,136 @@ class APIDocumentationGenerator {
                 </div>
             `).join('')}
         </div>`;
+        }
+        return '';
     }
-    return '';
-  }
 
-  /**
-   * Generate example from schema
-   */
-  generateSchemaExample(schema) {
-    if (schema.type === 'object') {
-      const example = {};
-      for (const [name, prop] of Object.entries(schema.properties || {})) {
-        if (prop.type === 'string') {
-          if (prop.format === 'email') {
-            example[name] = 'user@example.com';
-          } else if (prop.format === 'base64') {
-            example[name] = 'base64EncodedData...';
-          } else {
-            example[name] = `example ${name}`;
-          }
-        } else if (prop.type === 'number' || prop.type === 'integer') {
-          example[name] = prop.minimum || 0;
-        } else if (prop.type === 'boolean') {
-          example[name] = false;
-        } else if (prop.type === 'array') {
-          example[name] = ['example item'];
-        }
-      }
-      return example;
-    }
-    return {};
-  }
-
-  /**
-   * Generate anchor for endpoint
-   */
-  generateAnchor(method, path) {
-    return `${method.toLowerCase()}-${path.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-')}`;
-  }
-
-  /**
-   * Generate JSON documentation
-   */
-  generateJSONDocumentation() {
-    const config = ConfigManager.getSection('app');
-    
-    return {
-      openapi: '3.0.0',
-      info: {
-        title: config.name,
-        version: config.version,
-        description: 'AI-powered workflow for investigating Git commits that introduced bugs'
-      },
-      servers: [
-        {
-          url: `http://${config.host}:${config.port}`,
-          description: 'Development server'
-        }
-      ],
-      paths: this.generateOpenAPIPaths(),
-      components: {
-        securitySchemes: {
-          bearerAuth: {
-            type: 'http',
-            scheme: 'bearer'
-          }
-        }
-      }
-    };
-  }
-
-  /**
-   * Generate OpenAPI paths
-   */
-  generateOpenAPIPaths() {
-    const paths = {};
-    
-    for (const endpoint of this.endpoints.values()) {
-      const path = endpoint.path.replace(/{([^}]+)}/g, '{$1}');
-      
-      if (!paths[path]) {
-        paths[path] = {};
-      }
-      
-      paths[path][endpoint.method.toLowerCase()] = {
-        summary: endpoint.summary,
-        description: endpoint.description,
-        parameters: endpoint.parameters,
-        requestBody: endpoint.requestBody ? {
-          required: true,
-          content: {
-            'application/json': {
-              schema: endpoint.requestBody
-            }
-          }
-        } : undefined,
-        responses: Object.fromEntries(
-          Object.entries(endpoint.responses || {}).map(([code, desc]) => [
-            code,
-            {
-              description: typeof desc === 'string' ? desc : desc.description,
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object'
-                  }
+    /**
+     * Generate example from schema
+     */
+    generateSchemaExample(schema) {
+        if (schema.type === 'object') {
+            const example = {};
+            for (const [name, prop] of Object.entries(schema.properties || {})) {
+                if (prop.type === 'string') {
+                    if (prop.format === 'email') {
+                        example[name] = 'user@example.com';
+                    } else if (prop.format === 'base64') {
+                        example[name] = 'base64EncodedData...';
+                    } else {
+                        example[name] = `example ${name}`;
+                    }
+                } else if (prop.type === 'number' || prop.type === 'integer') {
+                    example[name] = prop.minimum || 0;
+                } else if (prop.type === 'boolean') {
+                    example[name] = false;
+                } else if (prop.type === 'array') {
+                    example[name] = ['example item'];
                 }
-              }
             }
-          ])
-        )
-      };
+            return example;
+        }
+        return {};
     }
-    
-    return paths;
-  }
 
-  /**
-   * Get all endpoints
-   */
-  getAllEndpoints() {
-    return Array.from(this.endpoints.values());
-  }
+    /**
+     * Generate anchor for endpoint
+     */
+    generateAnchor(method, path) {
+        return `${method.toLowerCase()}-${path.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-')}`;
+    }
 
-  /**
-   * Get endpoint by method and path
-   */
-  getEndpoint(method, path) {
-    const key = `${method.toUpperCase()}:${path}`;
-    return this.endpoints.get(key);
-  }
+    /**
+     * Generate JSON documentation
+     */
+    generateJSONDocumentation() {
+        const config = ConfigManager.getSection('app');
+
+        return {
+            openapi: '3.0.0',
+            info: {
+                title: config.name,
+                version: config.version,
+                description: 'AI-powered workflow for investigating Git commits that introduced bugs'
+            },
+            servers: [
+                {
+                    url: `http://${config.host}:${config.port}`,
+                    description: 'Development server'
+                }
+            ],
+            paths: this.generateOpenAPIPaths(),
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: 'http',
+                        scheme: 'bearer'
+                    }
+                }
+            }
+        };
+    }
+
+    /**
+     * Generate OpenAPI paths
+     */
+    generateOpenAPIPaths() {
+        const paths = {};
+
+        for (const endpoint of this.endpoints.values()) {
+            const path = endpoint.path.replace(/{([^}]+)}/g, '{$1}');
+
+            if (!paths[path]) {
+                paths[path] = {};
+            }
+
+            paths[path][endpoint.method.toLowerCase()] = {
+                summary: endpoint.summary,
+                description: endpoint.description,
+                parameters: endpoint.parameters,
+                requestBody: endpoint.requestBody ? {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: endpoint.requestBody
+                        }
+                    }
+                } : undefined,
+                responses: Object.fromEntries(
+                    Object.entries(endpoint.responses || {}).map(([code, desc]) => [
+                        code,
+                        {
+                            description: typeof desc === 'string' ? desc : desc.description,
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: 'object'
+                                    }
+                                }
+                            }
+                        }
+                    ])
+                )
+            };
+        }
+
+        return paths;
+    }
+
+    /**
+     * Get all endpoints
+     */
+    getAllEndpoints() {
+        return Array.from(this.endpoints.values());
+    }
+
+    /**
+     * Get endpoint by method and path
+     */
+    getEndpoint(method, path) {
+        const key = `${method.toUpperCase()}:${path}`;
+        return this.endpoints.get(key);
+    }
 }
 
 // Create singleton instance

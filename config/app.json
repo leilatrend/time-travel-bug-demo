@@ -1,48 +1,43 @@
 {
-  "app": {
-    "name": "Time Travel Bug Demo",
-    "version": "1.0.0",
-    "environment": "development",
-    "port": 3000,
-    "host": "localhost"
-  },
-  
-  "database": {
-    "type": "memory",
-    "maxRecords": 10000,
-    "autoCleanup": true,
-    "cleanupInterval": 3600000
-  },
-  
-  "logging": {
-    "level": "INFO",
-    "fileLogging": true,
-    "logFile": "./logs/app.log",
-    "maxFileSize": 10485760,
-    "maxFiles": 5
-  },
-  
-  "validation": {
-    "maxFieldLength": 1000,
-    "maxNameLength": 50,
-    "maxMessageLength": 500,
-    "emailRequired": false,
-    "strictValidation": false
-  },
-  
-  "security": {
-    "enableXSSProtection": true,
-    "enableInputSanitization": true,
-    "maxRequestSize": 1048576,
-    "rateLimitEnabled": true,
-    "rateLimitRequests": 100,
-    "rateLimitWindow": 900000
-  },
-  
-  "features": {
-    "enableMetrics": true,
-    "enableHealthCheck": true,
-    "enableDebugEndpoints": true,
-    "enableCORS": true
-  }
+    "app": {
+        "name": "Time Travel Bug Demo",
+        "version": "1.0.0",
+        "environment": "development",
+        "port": 3000,
+        "host": "localhost"
+    },
+    "database": {
+        "type": "memory",
+        "maxRecords": 10000,
+        "autoCleanup": true,
+        "cleanupInterval": 3600000
+    },
+    "logging": {
+        "level": "INFO",
+        "fileLogging": true,
+        "logFile": "./logs/app.log",
+        "maxFileSize": 10485760,
+        "maxFiles": 5
+    },
+    "validation": {
+        "maxFieldLength": 1000,
+        "maxNameLength": 50,
+        "maxMessageLength": 500,
+        "emailRequired": false,
+        "strictValidation": false
+    },
+    "security": {
+        "enableXSSProtection": true,
+        "enableInputSanitization": true,
+        "maxRequestSize": 1048576,
+        "rateLimitEnabled": true,
+        "rateLimitRequests": 100,
+        "rateLimitWindow": 900000
+    },
+    "features": {
+        "enableMetrics": true,
+        "enableHealthCheck": true,
+        "enableDebugEndpoints": true,
+        "enableCORS": true
+    }
 }
