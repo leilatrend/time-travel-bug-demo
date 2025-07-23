@@ -1,22 +1,255 @@
 # 🧠 Time Travel Bug Demo
 
-This repository is used to demonstrate an AI-powered workflow that investigates which Git commit likely introduced a bug — using GitHub, GPT, and n8n.
+This repository demonstrates an AI-powered workflow for investigating which Git commit likely introduced a bug. The project simulates a real-world Node.js application with intentionally placed bugs across different commits to test debugging capabilities.
 
 ---
 
-## 🔍 Scenario
+## 🔍 Project Overview
 
-Imagine a teammate reports:
+This demo contains a full-featured Node.js application with:
 
-> "Clicking the *Save* button crashes the app. The console shows a null pointer exception on line 102 of `FormHandler.js`."
+- **Form handling system** with validation and CRUD operations
+- **User management** with authentication and sessions
+- **File upload system** with validation and storage
+- **API documentation generator** with interactive HTML output
+- **Performance monitoring** with metrics and alerts
+- **Advanced caching system** with LRU eviction and TTL
+- **Security utilities** with input sanitization and rate limiting
 
-This workflow will:
-
-1. Analyze the bug description
-2. Fetch recent Git commits
-3. Ask GPT which commit most likely caused the issue
-4. Return the suspected commit with reasoning via Slack or chat
+**The catch**: Three subtle bugs are intentionally hidden in different commits to test AI-powered debugging workflows.
 
 ---
 
-## 📁 Repository Structure
+## 🐛 Hidden Bugs for Testing
+
+### Bug 1: UserManager hashPassword Null Pointer
+
+- **Location**: `server/UserManager.js:36`
+- **Commit**: `f329d1d` (8th commit from HEAD)
+- **Trigger**: Register user with `null` password
+- **Error**: `Cannot read properties of null (reading 'toString')`
+
+**Example User Report:**
+> I'm seeing this error when trying to register a user:
+> "Cannot read properties of null (reading 'toString')"
+> Seems to happen when the password is null.
+> Can you help me figure out which commit caused this?
+
+```bash
+curl -X POST http://localhost:3000/api/users/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":null,"name":"Test User"}'
+```
+
+### Bug 2: APIRouter fileData Buffer Error
+
+- **Location**: `server/APIRouter.js:515`
+- **Commit**: `935d7fe` (6th commit from HEAD)
+- **Trigger**: Upload file without `fileData` field
+- **Error**: `The first argument must be of type string...Received undefined`
+
+**Example User Report:**
+> We get this error when uploading a file without providing fileData:
+> "The first argument must be of type string or an instance of Buffer [...] Received undefined"
+> Can you investigate which commit might have introduced this bug?
+
+```bash
+curl -X POST http://localhost:3000/api/files/upload \
+  -H "Content-Type: application/json" \
+  -d '{"fileName":"test.txt","description":"Test file"}'
+```
+
+### Bug 3: FileUploadHandler writeFile Edge Case
+
+- **Location**: `server/FileUploadHandler.js:76`
+- **Commit**: `eb1c426` (7th commit from HEAD)
+- **Trigger**: Pass `null` fileData in edge cases
+- **Error**: File write errors or confusing error messages
+
+**Example User Report:**
+> When uploading a file, sometimes we get this:
+> "ENOENT: no such file or directory"
+> Looks like it's trying to write to a file that doesn't exist.
+> Can you track down which commit may be responsible?
+
+---
+
+## 🏗️ Architecture
+
+```text
+time-travel-bug-demo/
+├── server/
+│   ├── FormHandler.js          # ✅ Original bug fixed in early commit
+│   ├── UserManager.js          # 🐛 Contains hashPassword bug
+│   ├── FileUploadHandler.js    # 🐛 Contains file processing bugs  
+│   ├── APIRouter.js            # 🐛 Contains fileData handling bug
+│   ├── DatabaseManager.js      # In-memory database with CRUD
+│   ├── Logger.js               # Multi-level logging system
+│   ├── ConfigManager.js        # Configuration management
+│   ├── Middleware.js           # HTTP middleware collection
+│   ├── Server.js               # Main HTTP server
+│   ├── APIDocumentationGenerator.js # Auto-generates API docs
+│   ├── PerformanceMonitor.js   # Request/memory monitoring
+│   ├── CacheManager.js         # LRU cache with TTL
+│   ├── SecurityUtils.js        # Security & validation tools
+│   └── DataValidator.js        # Comprehensive validation
+├── config/
+│   └── app.json                # Application configuration
+├── app.js                      # Application entry point
+├── package.json                # Dependencies and scripts
+└── README.md                   # This file
+```
+
+---
+
+## � Quick Start
+
+### Prerequisites
+- Node.js 14+ 
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/leilatrend/time-travel-bug-demo.git
+cd time-travel-bug-demo
+
+# Install dependencies
+npm install
+
+# Start the application
+npm start
+```
+
+The server will start on `http://localhost:3000`
+
+### Available Scripts
+
+```bash
+npm start          # Start the application
+npm run dev        # Start in development mode
+npm test           # Run tests (placeholder)
+npm run docs       # Generate API documentation
+```
+
+---
+
+## 📡 API Endpoints
+
+### Form Management
+- `POST /api/forms` - Create form
+- `GET /api/forms/:id` - Get form by ID
+- `PUT /api/forms/:id` - Update form
+- `DELETE /api/forms/:id` - Delete form
+
+### User Management
+- `POST /api/users/register` - Register user (🐛 **Bug 1 here**)
+- `POST /api/users/login` - User login
+- `GET /api/users/profile` - Get user profile
+- `PUT /api/users/profile` - Update profile
+
+### File Management  
+- `POST /api/files/upload` - Upload file (🐛 **Bug 2 & 3 here**)
+- `GET /api/files/:id` - Get file info
+- `GET /api/files/:id/download` - Download file
+- `DELETE /api/files/:id` - Delete file
+
+### System
+- `GET /api/health` - Health check
+- `GET /api/stats` - System statistics
+- `GET /api/docs` - API documentation
+
+---
+
+## 🔬 Testing the Bugs
+
+### Manual Testing
+
+Each bug can be triggered with specific API calls. Use the curl commands provided in the bug descriptions above.
+
+### Expected Error Messages
+
+The bugs produce realistic error messages that require investigation:
+
+1. **Null pointer exceptions** that don't immediately point to the root cause
+2. **Buffer type errors** with confusing stack traces  
+3. **File system errors** that mask the real validation issue
+
+---
+
+## 🕰️ Git Commit History
+
+The bugs are strategically placed in different commits:
+
+```bash
+git log --oneline
+# 7ed85ca (HEAD) feat: Add comprehensive security utilities
+# 9cadd12 feat: Add advanced cache management system  
+# 9467c3e feat: Add comprehensive performance monitoring
+# cd39a8e feat: Add comprehensive API documentation generator
+# d1f7f77 feat: Add comprehensive data validation utilities
+# 935d7fe feat: Integrate user and file APIs (🐛 Bug 2)
+# eb1c426 feat: Add file upload system (🐛 Bug 3)  
+# f329d1d feat: Add user management (🐛 Bug 1)
+# 3372278 feat: Add application entry point
+# 0c81708 feat: Add HTTP server architecture
+# 12def10 feat: Add core infrastructure modules
+# b04b475 feat: Enhanced FormHandler (✅ Fixed original bug)
+```
+
+---
+
+## 🤖 AI Debugging Workflow
+
+This repository is designed to test AI systems that can:
+
+1. **Analyze error messages** and stack traces
+2. **Correlate bugs with commit history** 
+3. **Identify the most likely problematic commit**
+4. **Provide reasoning** for the analysis
+5. **Suggest fixes** or investigation steps
+
+### Example Workflow
+
+1. User reports: *"File upload fails with Buffer type error"*
+2. AI analyzes recent commits involving file handling
+3. AI identifies commit `935d7fe` as most likely culprit
+4. AI suggests checking `APIRouter.js` line 515 for `fileData` handling
+5. Developer can time-travel to that commit for investigation
+
+---
+
+## 🛠️ Development Notes
+
+### Design Principles
+
+- **Realistic complexity**: The application has real features, not just toy examples
+- **Subtle bugs**: Errors that require actual investigation, not obvious typos
+- **Layered architecture**: Multiple modules with proper separation of concerns
+- **Production patterns**: Uses real-world patterns like middleware, validation, logging
+
+### Adding New Bugs
+
+To add more test bugs:
+
+1. Create a new feature in a separate commit
+2. Introduce a subtle bug with a `🐛` comment
+3. Add several more commits after it
+4. Document the bug in this README
+
+---
+
+## 📝 License
+
+This project is for demonstration purposes. Feel free to use and modify.
+
+---
+
+## 🙋 Contributing
+
+This is a demo project, but suggestions for more realistic bugs or improved architecture are welcome!
+
+---
+
+## Happy time-traveling! 🕰️🐛
