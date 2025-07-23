@@ -1,4 +1,19 @@
 {
     "name": "time-travel-bug-demo",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "description": "AI-powered workflow for investigating Git commits that introduced bugs",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js",
+        "dev": "node app.js",
+        "test": "node app.js --test",
+        "config": "node app.js --config",
+        "help": "node app.js --help"
+    },
+    "keywords": ["ai", "git", "bug-tracking", "workflow", "node.js"],
+    "author": "Your Name",
+    "license": "MIT",
+    "engines": {
+        "node": ">=14.0.0"
+    }
 }
