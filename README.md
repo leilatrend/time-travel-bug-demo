@@ -25,7 +25,7 @@ This demo contains a full-featured Node.js application with:
 ### Bug 1: UserManager hashPassword Null Pointer
 
 - **Location**: `server/UserManager.js:36`
-- **Commit**: `f329d1d` (8th commit from HEAD)
+- **Commit**: `f329d1d`
 - **Trigger**: Register user with `null` password
 - **Error**: `Cannot read properties of null (reading 'toString')`
 
@@ -34,6 +34,16 @@ This demo contains a full-featured Node.js application with:
 > "Cannot read properties of null (reading 'toString')"
 > Seems to happen when the password is null.
 > Can you help me figure out which commit caused this?
+
+**Complete Error Log:**
+
+```text
+[2025-07-23T10:30:45.123Z] [12345] [ERROR] User registration failed | {"error":"Cannot read properties of null (reading 'toString')","email":"user@example.com"}
+
+TypeError: Cannot read properties of null (reading 'toString')
+    at UserManager.hashPassword (/Users/leila_kao/dev/ai/time-travel-bug-demo/server/UserManager.js:32:48)
+    at UserManager.registerUser (/Users/leila_kao/dev/ai/time-travel-bug-demo/server/UserManager.js:64:39)
+```
 
 ```bash
 curl -X POST http://localhost:3000/api/users/register \
@@ -44,7 +54,7 @@ curl -X POST http://localhost:3000/api/users/register \
 ### Bug 2: APIRouter fileData Buffer Error
 
 - **Location**: `server/APIRouter.js:515`
-- **Commit**: `935d7fe` (6th commit from HEAD)
+- **Commit**: `935d7fe`
 - **Trigger**: Upload file without `fileData` field
 - **Error**: `The first argument must be of type string...Received undefined`
 
@@ -52,6 +62,16 @@ curl -X POST http://localhost:3000/api/users/register \
 > We get this error when uploading a file without providing fileData:
 > "The first argument must be of type string or an instance of Buffer [...] Received undefined"
 > Can you investigate which commit might have introduced this bug?
+
+**Complete Error Log:**
+
+```text
+[2025-07-23T10:35:12.456Z] [12345] [ERROR] API: File upload error | {"error":"The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined"}
+
+TypeError: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined
+    at Function.from (buffer.js:330:9)
+    at APIRouter.handleFileUpload (/Users/leila_kao/dev/ai/time-travel-bug-demo/server/APIRouter.js:412:42)
+```
 
 ```bash
 curl -X POST http://localhost:3000/api/files/upload \
@@ -62,7 +82,7 @@ curl -X POST http://localhost:3000/api/files/upload \
 ### Bug 3: FileUploadHandler writeFile Edge Case
 
 - **Location**: `server/FileUploadHandler.js:76`
-- **Commit**: `eb1c426` (7th commit from HEAD)
+- **Commit**: `eb1c426`
 - **Trigger**: Pass `null` fileData in edge cases
 - **Error**: File write errors or confusing error messages
 
@@ -71,6 +91,15 @@ curl -X POST http://localhost:3000/api/files/upload \
 > "ENOENT: no such file or directory"
 > Looks like it's trying to write to a file that doesn't exist.
 > Can you track down which commit may be responsible?
+
+**Complete Error Log:**
+
+```text
+[2025-07-23T10:40:33.789Z] [12345] [ERROR] File upload failed | {"error":"ENOENT: no such file or directory, open '/Users/leila_kao/dev/ai/time-travel-bug-demo/uploads/1690191633789_abc123.txt'","originalName":"test.txt"}
+
+Error: ENOENT: no such file or directory, open '/Users/leila_kao/dev/ai/time-travel-bug-demo/uploads/1690191633789_abc123.txt'
+    at async FileUploadHandler.processUpload (/Users/leila_kao/dev/ai/time-travel-bug-demo/server/FileUploadHandler.js:89:7)
+```
 
 ### Bug 4: FormHandler Null Pointer (Historical Bug)
 
