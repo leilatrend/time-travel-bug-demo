@@ -70,6 +70,8 @@ class FileUploadHandler {
             // Generate unique filename
             const fileName = this.generateFileName(metadata.originalName || 'upload');
             const filePath = path.join(this.uploadDir, fileName);
+        // FIX: Ensure upload directory exists before writing
+        this.ensureUploadDirectory();
 
             // 🐛 HIDDEN BUG: This will crash when fileData is null/undefined in some edge cases
             // The error message will be confusing and won't point to the real issue
