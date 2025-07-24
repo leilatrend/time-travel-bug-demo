@@ -32,9 +32,6 @@ class UserManager {
      */
     hashPassword(password) {
         return Buffer.from(password.toString()).toString('base64');
-  if (!password) {
-    throw new Error('Password is required');
-  }
     }
 
     /**

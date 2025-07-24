@@ -20,6 +20,7 @@ This demo contains a full-featured Node.js application with:
 
 ---
 
+<<<<<<< HEAD
 ## 🏗️ Architecture
 
 ```text
@@ -48,6 +49,8 @@ time-travel-bug-demo/
 
 ---
 
+=======
+>>>>>>> 16fb4edca35dad333809584abee51709c46ee6ed
 ## � Quick Start
 
 ### Prerequisites
@@ -93,14 +96,14 @@ npm run docs       # Generate API documentation
 
 ### User Management
 
-- `POST /api/users/register` - Register user (🐛 **Bug 1 here**)
+- `POST /api/users/register` - Register user
 - `POST /api/users/login` - User login
 - `GET /api/users/profile` - Get user profile
 - `PUT /api/users/profile` - Update profile
 
 ### File Management  
 
-- `POST /api/files/upload` - Upload file (🐛 **Bug 2 & 3 here**)
+- `POST /api/files/upload` - Upload file
 - `GET /api/files/:id` - Get file info
 - `GET /api/files/:id/download` - Download file
 - `DELETE /api/files/:id` - Delete file
@@ -134,15 +137,6 @@ This repository is designed to test AI systems that can:
 - **Layered architecture**: Multiple modules with proper separation of concerns
 - **Production patterns**: Uses real-world patterns like middleware, validation, logging
 - **Bug evolution**: Includes both active bugs and historical fixes for comprehensive analysis
-
-### Adding New Bugs
-
-To add more test bugs:
-
-1. Create a new feature in a separate commit
-2. Introduce a subtle bug with a `🐛` comment
-3. Add several more commits after it
-4. Document the bug in this README
 
 ---
 
