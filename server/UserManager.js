@@ -1,50 +1,57 @@
-/**
- * User Manager Module
- * Handles user registration, authentication, and profile management
- */
-
-const DatabaseManager = require('./DatabaseManager');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const Logger = require('./Logger');
 
 class UserManager {
     constructor() {
         this.users = new Map();
         this.sessions = new Map();
-        this.lastUserId = 0;
+        this.saltRounds = 10;
+        
+        Logger.info('UserManager initialized');
     }
 
-    /**
-     * Generate a new user ID
-     */
     generateUserId() {
-        return ++this.lastUserId;
+        return crypto.randomBytes(16).toString('hex');
     }
 
-    /**
-     * Generate a session token
-     */
     generateSessionToken() {
-        return Math.random().toString(36).substring(2) + Date.now().toString(36);
+        return crypto.randomBytes(32).toString('hex');
     }
 
-    /**
-     * Hash password using Base64 encoding
-     */
-    hashPassword(password) {
-        return Buffer.from(password.toString()).toString('base64');
-    }
-
-    /**
-     * Validate email format
-     */
     validateEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
 
-    /**
-     * Register a new user
-     */
+    validatePassword(password) {
+        // Password must be at least 8 characters long
+        return password && password.length >= 8;
+    }
+
+    hashPassword(password) {
+        // Add null/undefined check before calling toString()
+        if (password === null || password === undefined) {
+            throw new Error('Password cannot be null or undefined');
+        }
+        return Buffer.from(password.toString()).toString('base64');
+    }
+
+    async hashPasswordSecure(password) {
+        // Add null/undefined check for secure hashing too
+        if (password === null || password === undefined) {
+            throw new Error('Password cannot be null or undefined');
+        }
+        return await bcrypt.hash(password.toString(), this.saltRounds);
+    }
+
+    async verifyPassword(password, hashedPassword) {
+        if (password === null || password === undefined) {
+            return false;
+        }
+        return await bcrypt.compare(password.toString(), hashedPassword);
+    }
+
     async registerUser(userData) {
         try {
             Logger.info('User registration attempt', { email: userData.email });
@@ -54,274 +61,243 @@ class UserManager {
                 throw new Error('Email and password are required');
             }
 
+            // Add null check for password
+            if (userData.password === null || userData.password === undefined) {
+                throw new Error('Password cannot be null or undefined');
+            }
+
+            // Validate email format
             if (!this.validateEmail(userData.email)) {
                 throw new Error('Invalid email format');
             }
 
-            if (userData.password.length < 6) {
-                throw new Error('Password must be at least 6 characters long');
+            // Validate password strength
+            if (!this.validatePassword(userData.password)) {
+                throw new Error('Password must be at least 8 characters long');
             }
 
             // Check if user already exists
-            for (const user of this.users.values()) {
-                if (user.email === userData.email) {
-                    throw new Error('User with this email already exists');
-                }
+            if (this.users.has(userData.email)) {
+                throw new Error('User already exists');
             }
 
-            // Create new user
+            // Generate user ID
             const userId = this.generateUserId();
-            const hashedPassword = this.hashPassword(userData.password);
+            
+            // Hash password securely
+            const hashedPassword = await this.hashPasswordSecure(userData.password);
 
-            const newUser = {
+            // Create user object
+            const user = {
                 id: userId,
                 email: userData.email,
-                password: hashedPassword,
-                name: userData.name || 'Anonymous User',
-                role: userData.role || 'user',
-                createdAt: new Date().toISOString(),
-                isActive: true,
-                lastLogin: null,
-                profileData: {
-                    preferences: {},
-                    settings: {
-                        notifications: true,
-                        theme: 'light'
-                    }
-                }
+                hashedPassword: hashedPassword,
+                createdAt: new Date(),
+                isActive: true
             };
 
-            this.users.set(userId, newUser);
+            // Store user
+            this.users.set(userData.email, user);
 
-            // Store in database
-            DatabaseManager.create({
-                type: 'user',
-                userId: userId,
-                ...newUser
+            Logger.info('User registered successfully', { 
+                userId: userId, 
+                email: userData.email 
             });
 
-            Logger.info('User registered successfully', { userId, email: userData.email });
-
-            // Return user without password
-            const { password, ...userResponse } = newUser;
             return {
                 success: true,
-                user: userResponse,
+                userId: userId,
                 message: 'User registered successfully'
             };
 
         } catch (error) {
-            Logger.error('User registration failed', { error: error.message, email: userData.email });
+            Logger.error('User registration failed', { 
+                email: userData.email, 
+                error: error.message 
+            });
+            
             return {
                 success: false,
-                error: error.message,
-                message: 'Registration failed'
+                error: error.message
             };
         }
     }
 
-    /**
-     * Authenticate user login
-     */
     async loginUser(email, password) {
         try {
-            Logger.info('User login attempt', { email });
+            Logger.info('User login attempt', { email: email });
 
+            // Validate input
             if (!email || !password) {
                 throw new Error('Email and password are required');
             }
 
-            // Find user by email
-            let foundUser = null;
-            for (const user of this.users.values()) {
-                if (user.email === email) {
-                    foundUser = user;
-                    break;
-                }
+            // Add null check for password
+            if (password === null || password === undefined) {
+                throw new Error('Password cannot be null or undefined');
             }
 
-            if (!foundUser) {
-                throw new Error('Invalid email or password');
-            }
-
-            if (!foundUser.isActive) {
-                throw new Error('Account is deactivated');
-            }
-
-            // Verify password
-            const hashedPassword = this.hashPassword(password);
-            if (foundUser.password !== hashedPassword) {
-                throw new Error('Invalid email or password');
-            }
-
-            // Create session
-            const sessionToken = this.generateSessionToken();
-            const session = {
-                userId: foundUser.id,
-                token: sessionToken,
-                createdAt: new Date().toISOString(),
-                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-                userAgent: 'API Client'
-            };
-
-            this.sessions.set(sessionToken, session);
-
-            // Update last login
-            foundUser.lastLogin = new Date().toISOString();
-
-            Logger.info('User login successful', { userId: foundUser.id, email });
-
-            // Return user without password
-            const { password: pwd, ...userResponse } = foundUser;
-            return {
-                success: true,
-                user: userResponse,
-                sessionToken: sessionToken,
-                message: 'Login successful'
-            };
-
-        } catch (error) {
-            Logger.error('User login failed', { error: error.message, email });
-            return {
-                success: false,
-                error: error.message,
-                message: 'Login failed'
-            };
-        }
-    }
-
-    /**
-     * Validate session token
-     */
-    validateSession(token) {
-        const session = this.sessions.get(token);
-
-        if (!session) {
-            return { valid: false, error: 'Invalid session token' };
-        }
-
-        if (new Date() > new Date(session.expiresAt)) {
-            this.sessions.delete(token);
-            return { valid: false, error: 'Session expired' };
-        }
-
-        const user = this.users.get(session.userId);
-        if (!user || !user.isActive) {
-            return { valid: false, error: 'User account not found or inactive' };
-        }
-
-        return { valid: true, user, session };
-    }
-
-    /**
-     * Logout user
-     */
-    logoutUser(token) {
-        const session = this.sessions.get(token);
-        if (session) {
-            this.sessions.delete(token);
-            Logger.info('User logged out', { userId: session.userId });
-            return { success: true, message: 'Logged out successfully' };
-        }
-        return { success: false, error: 'Invalid session token' };
-    }
-
-    /**
-     * Get user profile
-     */
-    getUserProfile(userId) {
-        const user = this.users.get(userId);
-        if (!user) {
-            return { success: false, error: 'User not found' };
-        }
-
-        const { password, ...userProfile } = user;
-        return {
-            success: true,
-            user: userProfile,
-            message: 'Profile retrieved successfully'
-        };
-    }
-
-    /**
-     * Update user profile
-     */
-    updateUserProfile(userId, updateData) {
-        try {
-            const user = this.users.get(userId);
+            // Find user
+            const user = this.users.get(email);
             if (!user) {
                 throw new Error('User not found');
             }
 
-            // Update allowed fields
-            const allowedFields = ['name', 'profileData'];
-            for (const field of allowedFields) {
-                if (updateData[field] !== undefined) {
-                    if (field === 'profileData') {
-                        user.profileData = { ...user.profileData, ...updateData.profileData };
-                    } else {
-                        user[field] = updateData[field];
-                    }
-                }
+            // Check if user is active
+            if (!user.isActive) {
+                throw new Error('User account is deactivated');
             }
 
-            user.updatedAt = new Date().toISOString();
+            // Verify password
+            const isPasswordValid = await this.verifyPassword(password, user.hashedPassword);
+            if (!isPasswordValid) {
+                throw new Error('Invalid password');
+            }
 
-            Logger.info('User profile updated', { userId });
+            // Generate session token
+            const sessionToken = this.generateSessionToken();
+            const sessionData = {
+                userId: user.id,
+                email: user.email,
+                createdAt: new Date(),
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+            };
 
-            const { password, ...userResponse } = user;
+            // Store session
+            this.sessions.set(sessionToken, sessionData);
+
+            Logger.info('User logged in successfully', { 
+                userId: user.id, 
+                email: email 
+            });
+
             return {
                 success: true,
-                user: userResponse,
-                message: 'Profile updated successfully'
+                sessionToken: sessionToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    createdAt: user.createdAt
+                },
+                message: 'Login successful'
             };
 
         } catch (error) {
-            Logger.error('User profile update failed', { error: error.message, userId });
+            Logger.error('User login failed', { 
+                email: email, 
+                error: error.message 
+            });
+            
             return {
                 success: false,
-                error: error.message,
-                message: 'Profile update failed'
+                error: error.message
             };
         }
     }
 
-    /**
-     * Get all users (admin only)
-     */
-    getAllUsers() {
-        const userList = Array.from(this.users.values()).map(user => {
-            const { password, ...userWithoutPassword } = user;
-            return userWithoutPassword;
-        });
+    validateSession(sessionToken) {
+        try {
+            if (!sessionToken) {
+                return { valid: false, error: 'Session token required' };
+            }
 
-        return {
-            success: true,
-            users: userList,
-            total: userList.length,
-            message: 'Users retrieved successfully'
-        };
+            const session = this.sessions.get(sessionToken);
+            if (!session) {
+                return { valid: false, error: 'Invalid session token' };
+            }
+
+            // Check if session has expired
+            if (new Date() > session.expiresAt) {
+                this.sessions.delete(sessionToken);
+                return { valid: false, error: 'Session expired' };
+            }
+
+            return {
+                valid: true,
+                userId: session.userId,
+                email: session.email
+            };
+
+        } catch (error) {
+            Logger.error('Session validation failed', { error: error.message });
+            return { valid: false, error: 'Session validation failed' };
+        }
     }
 
-    /**
-     * Get user statistics
-     */
-    getUserStats() {
-        const totalUsers = this.users.size;
-        const activeUsers = Array.from(this.users.values()).filter(user => user.isActive).length;
-        const activeSessions = this.sessions.size;
+    logoutUser(sessionToken) {
+        try {
+            if (!sessionToken) {
+                return { success: false, error: 'Session token required' };
+            }
 
-        return {
-            totalUsers,
-            activeUsers,
-            inactiveUsers: totalUsers - activeUsers,
-            activeSessions,
-            lastUserId: this.lastUserId
-        };
+            const session = this.sessions.get(sessionToken);
+            if (!session) {
+                return { success: false, error: 'Invalid session token' };
+            }
+
+            // Remove session
+            this.sessions.delete(sessionToken);
+
+            Logger.info('User logged out successfully', { 
+                userId: session.userId, 
+                email: session.email 
+            });
+
+            return {
+                success: true,
+                message: 'Logout successful'
+            };
+
+        } catch (error) {
+            Logger.error('User logout failed', { error: error.message });
+            return { success: false, error: 'Logout failed' };
+        }
+    }
+
+    getAllUsers() {
+        try {
+            const userList = Array.from(this.users.values()).map(user => ({
+                id: user.id,
+                email: user.email,
+                createdAt: user.createdAt,
+                isActive: user.isActive
+            }));
+
+            return {
+                success: true,
+                users: userList,
+                count: userList.length
+            };
+
+        } catch (error) {
+            Logger.error('Failed to get user list', { error: error.message });
+            return { success: false, error: 'Failed to get user list' };
+        }
+    }
+
+    getUserById(userId) {
+        try {
+            const user = Array.from(this.users.values()).find(u => u.id === userId);
+            
+            if (!user) {
+                return { success: false, error: 'User not found' };
+            }
+
+            return {
+                success: true,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    createdAt: user.createdAt,
+                    isActive: user.isActive
+                }
+            };
+
+        } catch (error) {
+            Logger.error('Failed to get user by ID', { userId, error: error.message });
+            return { success: false, error: 'Failed to get user' };
+        }
     }
 }
 
-// Create singleton instance
-const userManager = new UserManager();
-
-module.exports = userManager;
+module.exports = UserManager;
