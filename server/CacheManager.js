@@ -81,6 +81,7 @@ class CacheManager {
                 Logger.debug('Cache entry expired', { key, ttl: actualTTL });
             }, actualTTL);
 
+            // Timer reference stored but never cleared on manual deletion
             this.timers.set(key, timer);
         }
 
