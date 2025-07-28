@@ -28,9 +28,19 @@ class UserManager {
     }
 
     /**
-     * Hash password using Base64 encoding
+     * Hash password (simple implementation for demo)
      */
     hashPassword(password) {
+        // Fix: Add null/undefined check before calling toString()
+        if (password === null || password === undefined) {
+            throw new Error('Password cannot be null or undefined');
+        }
+        
+        // Additional validation for empty string
+        if (typeof password !== 'string' && typeof password !== 'number') {
+            throw new Error('Password must be a string or number');
+        }
+        
         return Buffer.from(password.toString()).toString('base64');
     }
 
