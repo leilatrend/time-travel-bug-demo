@@ -31,6 +31,9 @@ class UserManager {
      * Hash password using Base64 encoding
      */
     hashPassword(password) {
+        if (password === null || password === undefined) {
+            throw new Error('Password cannot be null or undefined');
+        }
         return Buffer.from(password.toString()).toString('base64');
     }
 
