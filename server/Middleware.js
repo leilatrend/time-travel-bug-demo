@@ -102,7 +102,7 @@ class Middleware {
                 return;
             }
 
-            // Add current request
+            // Record request timestamp for rate limiting
             ipRequests.push(now);
             requests.set(ip, ipRequests);
 
