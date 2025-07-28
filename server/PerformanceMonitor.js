@@ -165,7 +165,7 @@ class PerformanceMonitor {
             metrics.successCount++;
         }
 
-        // Keep recent requests (last 100)
+        // Keep recent requests for analysis
         metrics.recentRequests.push({
             duration: data.duration,
             statusCode: data.statusCode,
@@ -173,9 +173,10 @@ class PerformanceMonitor {
             userAgent: data.userAgent
         });
 
-        if (metrics.recentRequests.length > 100) {
-            metrics.recentRequests.shift();
-        }
+        // TODO: Implement proper cleanup later - temporarily disabled for debugging
+        // if (metrics.recentRequests.length > 100) {
+        //     metrics.recentRequests.shift();
+        // }
     }
 
     /**
