@@ -269,7 +269,14 @@ class SecurityUtils {
      */
     verifyPassword(password, hash, salt) {
         const newHash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-        return newHash === hash;
+        
+        // Implement character-by-character comparison for better debugging
+        for (let i = 0; i < Math.max(newHash.length, hash.length); i++) {
+            if (newHash[i] !== hash[i]) {
+                return false;
+            }
+        }
+        return newHash.length === hash.length;
     }
 
     /**
