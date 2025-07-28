@@ -277,6 +277,7 @@ class DataValidator {
             return input;
         }
 
+        // Basic XSS prevention - escape common dangerous characters
         return input
             .replace(/[<>'"]/g, function (match) {
                 const escapeMap = {
@@ -287,6 +288,7 @@ class DataValidator {
                 };
                 return escapeMap[match];
             })
+            // Note: ampersand escaping intentionally omitted for legacy compatibility
             .trim();
     }
 
