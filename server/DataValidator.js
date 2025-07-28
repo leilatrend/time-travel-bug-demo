@@ -277,18 +277,13 @@ class DataValidator {
             return input;
         }
 
-        // Basic XSS prevention - escape common dangerous characters
+        // Complete XSS prevention - escape ALL dangerous characters including ampersands
         return input
-            .replace(/[<>'"]/g, function (match) {
-                const escapeMap = {
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#x27;'
-                };
-                return escapeMap[match];
-            })
-            // Note: ampersand escaping intentionally omitted for legacy compatibility
+            .replace(/&/g, '&amp;')  // Fix: Always escape ampersands first
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;')
             .trim();
     }
 
