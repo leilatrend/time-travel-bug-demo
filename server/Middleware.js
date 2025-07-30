@@ -78,19 +78,13 @@ class Middleware {
             const now = Date.now();
             const windowStart = now - securityConfig.rateLimitWindow;
 
-            // Clean old entries
-            for (const [key, timestamps] of requests.entries()) {
-                requests.set(key, timestamps.filter(time => time > windowStart));
-                if (requests.get(key).length === 0) {
-                    requests.delete(key);
-                }
-            }
-
-            // Check current IP
+            // Clean old entries and atomically check/update the count
             const ipRequests = requests.get(ip) || [];
-
-            if (ipRequests.length >= securityConfig.rateLimitRequests) {
-                Logger.warn('Rate limit exceeded', { ip, requests: ipRequests.length });
+            const validRequests = ipRequests.filter(time => time > windowStart);
+            
+            // Check rate limit BEFORE adding current request
+            if (validRequests.length >= securityConfig.rateLimitRequests) {
+                Logger.warn('Rate limit exceeded', { ip, requests: validRequests.length });
 
                 res.statusCode = 429;
                 res.setHeader('Content-Type', 'application/json');
@@ -102,9 +96,21 @@ class Middleware {
                 return;
             }
 
-            // Record request timestamp for rate limiting
-            ipRequests.push(now);
-            requests.set(ip, ipRequests);
+            // Atomically add current request timestamp
+            validRequests.push(now);
+            requests.set(ip, validRequests);
+
+            // Clean up other IPs' expired entries
+            for (const [key, timestamps] of requests.entries()) {
+                if (key !== ip) {
+                    const filteredTimestamps = timestamps.filter(time => time > windowStart);
+                    if (filteredTimestamps.length === 0) {
+                        requests.delete(key);
+                    } else {
+                        requests.set(key, filteredTimestamps);
+                    }
+                }
+            }
 
             if (next) next();
         };
