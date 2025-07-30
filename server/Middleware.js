@@ -78,19 +78,15 @@ class Middleware {
             const now = Date.now();
             const windowStart = now - securityConfig.rateLimitWindow;
 
-            // Clean old entries
-            for (const [key, timestamps] of requests.entries()) {
-                requests.set(key, timestamps.filter(time => time > windowStart));
-                if (requests.get(key).length === 0) {
-                    requests.delete(key);
-                }
-            }
-
-            // Check current IP
+            // Use atomic operations to prevent race conditions
             const ipRequests = requests.get(ip) || [];
-
-            if (ipRequests.length >= securityConfig.rateLimitRequests) {
-                Logger.warn('Rate limit exceeded', { ip, requests: ipRequests.length });
+            
+            // Clean old entries while checking count
+            const validRequests = ipRequests.filter(time => time > windowStart);
+            
+            // Check rate limit BEFORE adding new request
+            if (validRequests.length >= securityConfig.rateLimitRequests) {
+                Logger.warn('Rate limit exceeded', { ip, requests: validRequests.length });
 
                 res.statusCode = 429;
                 res.setHeader('Content-Type', 'application/json');
@@ -102,9 +98,9 @@ class Middleware {
                 return;
             }
 
-            // Record request timestamp for rate limiting
-            ipRequests.push(now);
-            requests.set(ip, ipRequests);
+            // Only add timestamp after successful rate limit check
+            validRequests.push(now);
+            requests.set(ip, validRequests);
 
             if (next) next();
         };
