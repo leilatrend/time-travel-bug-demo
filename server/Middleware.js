@@ -62,13 +62,14 @@ class Middleware {
     }
 
     /**
-     * Rate limiting middleware
+     * Rate limiting middleware with atomic operations
      */
     static rateLimit() {
         const requests = new Map();
+        const locks = new Map(); // Add per-IP locks
         const securityConfig = ConfigManager.getSecurityConfig();
 
-        return (req, res, next) => {
+        return async (req, res, next) => {
             if (!securityConfig.rateLimitEnabled) {
                 if (next) next();
                 return;
@@ -78,33 +79,47 @@ class Middleware {
             const now = Date.now();
             const windowStart = now - securityConfig.rateLimitWindow;
 
-            // Clean old entries
-            for (const [key, timestamps] of requests.entries()) {
-                requests.set(key, timestamps.filter(time => time > windowStart));
-                if (requests.get(key).length === 0) {
-                    requests.delete(key);
+            // Use per-IP lock to prevent race conditions
+            const lockKey = `lock_${ip}`;
+            while (locks.get(lockKey)) {
+                await new Promise(resolve => setTimeout(resolve, 1));
+            }
+            locks.set(lockKey, true);
+
+            try {
+                // Clean old entries atomically
+                for (const [key, timestamps] of requests.entries()) {
+                    const filtered = timestamps.filter(time => time > windowStart);
+                    if (filtered.length === 0) {
+                        requests.delete(key);
+                    } else {
+                        requests.set(key, filtered);
+                    }
                 }
+
+                // Atomic check and update
+                const ipRequests = requests.get(ip) || [];
+                
+                if (ipRequests.length >= securityConfig.rateLimitRequests) {
+                    Logger.warn('Rate limit exceeded', { ip, requests: ipRequests.length });
+
+                    res.statusCode = 429;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.end(JSON.stringify({
+                        error: 'Too Many Requests',
+                        message: 'Rate limit exceeded. Please try again later.',
+                        retryAfter: Math.ceil(securityConfig.rateLimitWindow / 1000)
+                    }));
+                    return;
+                }
+
+                // Atomically add new request
+                ipRequests.push(now);
+                requests.set(ip, ipRequests);
+
+            } finally {
+                locks.delete(lockKey);
             }
-
-            // Check current IP
-            const ipRequests = requests.get(ip) || [];
-
-            if (ipRequests.length >= securityConfig.rateLimitRequests) {
-                Logger.warn('Rate limit exceeded', { ip, requests: ipRequests.length });
-
-                res.statusCode = 429;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({
-                    error: 'Too Many Requests',
-                    message: 'Rate limit exceeded. Please try again later.',
-                    retryAfter: Math.ceil(securityConfig.rateLimitWindow / 1000)
-                }));
-                return;
-            }
-
-            // Record request timestamp for rate limiting
-            ipRequests.push(now);
-            requests.set(ip, ipRequests);
 
             if (next) next();
         };
